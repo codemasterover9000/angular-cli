@@ -1,12 +1,12 @@
 import {updateTsConfig} from '../../utils/project';
-import {writeMultipleFiles, appendToFile, createDir, replaceInFile} from '../../utils/fs';
+import {writeMultipleFiles, appendToFile, createDir} from '../../utils/fs';
 import {ng} from '../../utils/process';
 import {stripIndents} from 'common-tags';
 
 
 export default function() {
   return updateTsConfig(json => {
-    json['compilerOptions']['baseUrl'] = './';
+    json['compilerOptions']['baseUrl'] = '.';
     json['compilerOptions']['paths'] = {
       '@shared': [
         'app/shared'
@@ -14,24 +14,16 @@ export default function() {
       '@shared/*': [
         'app/shared/*'
       ],
-      '@root/*': [
-        './*'
-      ]
+      '*': [
+         '*',
+         'app/shared/*'
     };
   })
   .then(() => createDir('src/app/shared'))
   .then(() => writeMultipleFiles({
     'src/meaning-too.ts': 'export var meaning = 42;',
     'src/app/shared/meaning.ts': 'export var meaning = 42;',
-    'src/app/shared/index.ts': `export * from './meaning'`,
-  }))
-  .then(() => replaceInFile('src/app/app.module.ts', './app.component', '@root/app/app.component'))
-  .then(() => ng('build'))
-  .then(() => updateTsConfig(json => {
-    json['compilerOptions']['paths']['*'] = [
-      '*',
-      'app/shared/*'
-    ];
+    'src/app/shared/index.ts': `export * from './meaning'`
   }))
   .then(() => appendToFile('src/app/app.component.ts', stripIndents`
     import { meaning } from 'app/shared/meaning';
